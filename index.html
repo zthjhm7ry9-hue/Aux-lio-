@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#050000">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>lucasffx aimbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Reset básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #050000;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Fundo de Partículas */
+        #particles-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Título Principal */
+        .main-title {
+            position: relative;
+            z-index: 10;
+            color: #ff2a2a;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 42, 42, 0.8), 0 0 30px rgba(255, 42, 42, 0.4);
+            letter-spacing: 1px;
+        }
+
+        /* Container do Painel */
+        .panel-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 380px;
+            height: 480px;
+            background: rgba(15, 0, 0, 0.85);
+            border: 2px solid #ff2a2a;
+            border-radius: 20px;
+            box-shadow: 0 0 25px rgba(255, 42, 42, 0.3), inset 0 0 15px rgba(255, 42, 42, 0.1);
+            display: flex;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Barra Lateral (Menu Esquerdo) */
+        .sidebar {
+            width: 90px;
+            border-right: 2px solid #ff2a2a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            gap: 20px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #ff8a8a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            width: 70px;
+            padding: 10px 0;
+            border-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .nav-btn i {
+            font-size: 24px;
+        }
+
+        .nav-btn span {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Botão Ativo na Barra Lateral */
+        .nav-btn.active {
+            background: #ff2a2a;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 42, 42, 0.6);
+        }
+
+        /* Área de Conteúdo (Direita) */
+        .content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Esconde as abas por padrão */
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* Botões de Opções (Retangulares) */
+        .option-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .option-box {
+            flex: 1;
+            background: rgba(30, 0, 0, 0.6);
+            border: 1.5px solid #ff4d4d;
+            border-radius: 12px;
+            padding: 12px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option-box.active {
+            background: rgba(255, 42, 42, 0.15);
+            box-shadow: 0 0 10px rgba(255, 42, 42, 0.4);
+        }
+
+        /* Bolinha do Switch (Falsa, apenas visual) */
+        .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #ff2a2a;
+            box-shadow: 0 0 8px #ff2a2a;
+            transition: 0.2s;
+        }
+
+        .option-box.inactive .dot {
+            background: #555;
+            box-shadow: none;
+        }
+
+        .option-box span {
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        /* Caixa do FOV */
+        .fov-box {
+            background: rgba(30, 0, 0, 0.6);
+            border: 1.5px solid #ff4d4d;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fov-box span {
+            color: #ff6b6b;
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+
+        /* Slider Customizado */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px #ff2a2a, 0 0 5px #ff2a2a;
+            border: 2px solid #ff2a2a;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #5a0000;
+            border-radius: 2px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        /* Select Box (Pescoço) */
+        .select-box {
+            background: rgba(30, 0, 0, 0.6);
+            border: 1.5px solid #ff4d4d;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 12px;
+            width: 100%;
+            outline: none;
+            font-size: 14px;
+            font-weight: bold;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 15px;
+        }
+
+        /* Botão Injetar */
+        .btn-injetar {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(180deg, #ff4d4d, #b30000);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 42, 42, 0.5);
+            margin-top: auto;
+            transition: 0.2s;
+        }
+
+        .btn-injetar:active {
+            transform: scale(0.96);
+        }
+
+        /* Estilos da Aba Info */
+        .info-box {
+            background: rgba(30, 0, 0, 0.4);
+            border: 1.5px solid #ff4d4d;
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .info-box h4 {
+            color: #ff8a8a;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .info-box p {
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .info-box.dica {
+            border-left: 4px solid #ff2a2a;
+            background: rgba(255, 42, 42, 0.1);
+        }
+
+        .info-box.dica p {
+            font-size: 13px;
+            font-weight: normal;
+            color: #ffcccc;
+            line-height: 1.4;
+        }
+
+        /* Área de Login (Key) */
+        .login-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 15px;
+            background: rgba(0,0,0,0.6);
+            border: 1.5px dashed #ff2a2a;
+            border-radius: 12px;
+        }
+
+        .login-area input {
+            background: #1a0000;
+            border: 1px solid #ff4d4d;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+            letter-spacing: 3px;
+            outline: none;
+        }
+
+        .login-area button {
+            background: #ff2a2a;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Rodapé Netlify */
+        .powered-by {
+            position: absolute;
+            bottom: 20px;
+            z-index: 10;
+            background: #101820;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #2a3b4c;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .powered-by i {
+            color: #00c2cb;
+            font-size: 16px;
+        }
+
+        .powered-by span {
+            color: #8899a6;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fundo de Partículas -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Título Principal -->
+    <div class="main-title">lucasffx aimbot</div>
+
+    <!-- Painel Principal -->
+    <div class="panel-container">
+        
+        <!-- Barra Lateral -->
+        <div class="sidebar">
+            <button class="nav-btn active" onclick="switchTab('aimbt', this)">
+                <i class="fa-solid fa-crosshairs"></i>
+                <span>aimbt</span>
+            </button>
+            <button class="nav-btn" onclick="switchTab('info', this)">
+                <i class="fa-solid fa-circle-info"></i>
+                <span>Info</span>
+            </button>
+        </div>
+
+        <!-- Área de Conteúdo -->
+        <div class="content">
+            
+            <!-- ABA AIMBT (Principal) -->
+            <div id="tab-aimbt" class="tab-content active">
+                
+                <div class="option-row">
+                    <div class="option-box active" onclick="toggleOption(this)">
+                        <div class="dot"></div>
+                        <span>aim drag</span>
+                    </div>
+                    <div class="option-box active" onclick="toggleOption(this)">
+                        <div class="dot"></div>
+                        <span>Remover tremedeira</span>
+                    </div>
+                </div>
+
+                <div class="option-row">
+                    <div class="option-box active" onclick="toggleOption(this)">
+                        <div class="dot"></div>
+                        <span>Melhorar precisão</span>
+                    </div>
+                    <div class="option-box active" onclick="toggleOption(this)">
+                        <div class="dot"></div>
+                        <span>Aimbot</span>
+                    </div>
+                </div>
+
+                <div class="fov-box">
+                    <span>fov: [ <span id="fov-val">360</span> ]</span>
+                    <input type="range" min="0" max="360" value="360" id="fov-slider" oninput="document.getElementById('fov-val').innerText = this.value">
+                </div>
+
+                <select class="select-box">
+                    <option>Pescoço</option>
+                    <option>Cabeça</option>
+                    <option>Peito</option>
+                </select>
+
+                <button class="btn-injetar" onclick="injetar()">INJETAR</button>
+            </div>
+
+            <!-- ABA INFO -->
+            <div id="tab-info" class="tab-content">
+                
+                <!-- Sistema de Key -->
+                <div class="login-area" id="login-box">
+                    <p style="color: #ff8a8a; font-size: 12px; text-align: center; font-weight: bold;">DIGITE A KEY DE ACESSO</p>
+                    <input type="password" id="key-input" placeholder="***" maxlength="3">
+                    <button onclick="checkKey()">DESBLOQUEAR</button>
+                </div>
+
+                <!-- Conteúdo da Info (Escondido até colocar a key) -->
+                <div id="info-content" style="display: none; flex-direction: column; gap: 12px;">
+                    <div class="info-box">
+                        <h4>CRIADOR:</h4>
+                        <p>lucasffx</p>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>CRÉDITOS:</h4>
+                        <p>lucasffx</p>
+                    </div>
+
+                    <div class="info-box">
+                        <h4>MODELO DO TELEFONE:</h4>
+                        <p id="device-model">Detectando...</p>
+                    </div>
+
+                    <div class="info-box dica">
+                        <p>Dica: Ative no lobby e entre no treinamento para um melhor resultado.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Rodapé Netlify -->
+    <div class="powered-by">
+        <i class="fa-solid fa-atom"></i>
+        <span>Powered by Netlify</span>
+    </div>
+
+    <script>
+        // --- Lógica de Navegação (Abas) ---
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            btnElement.classList.add('active');
+        }
+
+        // --- Lógica dos Botões de Opção (Liga/Desliga visual) ---
+        function toggleOption(element) {
+            element.classList.toggle('active');
+            element.classList.toggle('inactive');
+        }
+
+        // --- Lógica de Verificação da Key ---
+        function checkKey() {
+            const key = document.getElementById('key-input').value;
+            
+            if (key === "987") {
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('info-content').style.display = 'flex';
+            } else {
+                alert("Key incorreta! Tente novamente.");
+            }
+        }
+
+        // --- Detectar Modelo do Celular ---
+        function detectDevice() {
+            const userAgent = navigator.userAgent;
+            let device = "Desconhecido";
+
+            if (/iPhone|iPad|iPod/i.test(userAgent)) {
+                device = "iPhone — iOS";
+            } else if (/Android/i.test(userAgent)) {
+                const match = userAgent.match(/Android\s([0-9\.]*)/);
+                device = match ? "Android " + match[1] : "Android";
+            }
+            
+            document.getElementById('device-model').innerText = device;
+        }
+        detectDevice();
+
+        // --- Função do Botão Injetar ---
+        function injetar() {
+            const btn = document.querySelector('.btn-injetar');
+            
+            // O CÓDIGO QUE VOCÊ ENVIOU (Copiado para a área de transferência)
+            const scriptConfig = `
+if aimbot = 78%
+const string v1: com.dts.freefireth
+aimbot 78%
+mira grudar muito 78% : : mira muito pesado 78% :
+<<< if aimbot = 78% if mira pesar grudando 78% na cabeça
+<<<<<<< sensitivity on
+<<<<<< if aimbot 78% sensitivity_on >>>
+("Resolution aimbot 78% ")
+("Resolution mira grudar 78% ")
+("Resolution mira pesar 78% ")
+const local dword
+const local aimbot (" headshot
+StartAcitivy const string vi: free fire/com.dts.freefireth;
+("HEADSHOT 78% MIRA TRAVAR NA CABEÇA")
+(HEADSHOT 78% = MIRA NÃO PASSAR DA CABEÇA")
+sensitivity_on />
+sensitivity_true />
+AimLook force
+if aimlook force 60%
+const string vi: com.dts.freefireth
+AimLook 60% Start const mira grudar force 60%
+const mira force 60%
+const string v1 ("aimlook mira grudar 60% force ")
+9999x");
+StartAcitivy (
+("mira puxar a cabeça ") Start almlook 60%
+sensitivity_on { aimlook 60
+(" mira grudar force 60% ") aimlook 60%
+Start
+StartAcitivy { const string v2 (aimlook grudar 60% (" force dword:
+public class SensitivityManager {
+private float sensitivityMultiplier;
+public SensitivityManager(float multiplier) {
+this.sensitivityMultiplier = multiplier;
+}
+public float adjustMovement (float inputDelta) {
+return inputDelta * sensitivity Multiplier; }
+public void onTouchMove (float deltax, float deltay) {
+float newX adjustMovement(deltaX);
+float newY adjustMovement(deltay);
+}
+applyToCamera(newX, newY);
+private void applyToCamera(float x, float y) {
+System.out.println("Movendo câmera para: X=" + x + " Y=" + y); }
+`;
+
+            // Copia os códigos para a área de transferência
+            navigator.clipboard.writeText(scriptConfig).catch(err => console.log('Erro ao copiar', err));
+
+            btn.innerText = "INJETADO! ABRINDO...";
+            btn.style.opacity = "0.7";
+
+            // Tenta abrir o Free Fire via URL Scheme (funciona em Android e iPhone)
+            setTimeout(() => {
+                window.location.href = "freefire://";
+                
+                // Fallback: Se em 2 segundos o jogo não abrir, vai para a loja
+                setTimeout(() => {
+                    if (!document.hidden) {
+                        if (/Android/i.test(navigator.userAgent)) {
+                            window.location.href = "https://play.google.com/store/apps/details?id=com.dts.freefireth";
+                        } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                            window.location.href = "https://apps.apple.com/br/app/garena-free-fire/id1011200759";
+                        }
+                    }
+                    btn.innerText = "INJETAR";
+                    btn.style.opacity = "1";
+                }, 2000);
+            }, 300);
+        }
+
+        // --- Fundo de Partículas Animadas ---
+        const canvas = document.getElementById('particles-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.6;
+                this.vy = (Math.random() - 0.5) * 0.6;
+                this.size = Math.random() * 2.5 + 1;
+                this.color = `rgba(255, 42, 42, ${Math.random() * 0.5 + 0.1})`;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+                this.draw();
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff2a2a';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < 80; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => p.update());
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+    </script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registrado com sucesso!"))
+        .catch((error) => console.error("Erro ao registrar Service Worker:", error));
+    }
+  </script>
+</body>
+</html>
